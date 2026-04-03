@@ -1,8 +1,9 @@
 package columns;
 
-import java.applet.*;
-import java.awt.*;
-import java.util.*;
+import java.applet.Applet;
+import java.awt.Color;
+import java.awt.Event;
+import java.awt.Graphics;
 
 public class Columns extends Applet implements Runnable {
 
@@ -12,43 +13,26 @@ public class Columns extends Applet implements Runnable {
 	private final Color COLORS[] = { Color.black, Color.cyan, Color.blue, Color.red, Color.green, Color.yellow,
 			Color.pink, Color.magenta, Color.black };
 
-	int col, row, figuresMatchedCounter, keyPressed;
-	long Score, DScore, tc;
-	Font fCourier;
-	Figure figure;
+	int keyPressed;
 
-	boolean noChanges = true, isKeyPressed = false;
+	long tc;
+
+	boolean isKeyPressed = false;
 
 	Graphics graphics;
 
 	Thread thr = null;
 
-	private Board board;
+	Board board;
 
-	void checkNeighbours(int a, int b, int c, int d, int i, int j) {
-		if ((board.newField[j][i] == board.newField[a][b]) && (board.newField[j][i] == board.newField[c][d])) {
-			board.oldField[a][b] = 0;
-			DrawBox(a, b, 8);
-			board.oldField[j][i] = 0;
-			DrawBox(j, i, 8);
-			board.oldField[c][d] = 0;
-			DrawBox(c, d, 8);
-			noChanges = false;
-			Score += (board.Level + 1) * 10;
-			figuresMatchedCounter++;
-		}
-		;
-	}
-
-	void Delay(long t) {
+	void delay(long t) {
 		try {
 			Thread.sleep(t);
 		} catch (InterruptedException e) {
 		}
-		;
 	}
 
-	void DrawBox(int x, int y, int c) {
+	void drawBox(int x, int y, int c) {
 		if (c == 0) {
 			graphics.setColor(Color.black);
 			graphics.fillRect(LEFT_BORDER + x * BOX_SIZE - BOX_SIZE, TOP_BORDER + y * BOX_SIZE - BOX_SIZE, BOX_SIZE,
@@ -78,50 +62,27 @@ public class Columns extends Applet implements Runnable {
 	void drawField(Graphics g) {
 		for (int i = 1; i <= DEPTH; i++) {
 			for (int j = 1; j <= WIDTH; j++) {
-				DrawBox(j, i, board.newField[j][i]);
+				drawBox(j, i, board.newField[j][i]);
 			}
 		}
 	}
 
-	void DrawFigure(Figure f) {
-		DrawBox(f.x, f.y, f.c[1]);
-		DrawBox(f.x, f.y + 1, f.c[2]);
-		DrawBox(f.x, f.y + 2, f.c[3]);
+	void drawFigure(Figure f) {
+		drawBox(f.x, f.y, f.c[1]);
+		drawBox(f.x, f.y + 1, f.c[2]);
+		drawBox(f.x, f.y + 2, f.c[3]);
 	}
 
-	void DropFigure(Figure f) {
-		int zz;
-		if (f.y < DEPTH - 2) {
-			zz = DEPTH;
-			while (board.newField[f.x][zz] > 0) {
-				zz--;
-			}
-			DScore = (((board.Level + 1) * (DEPTH * 2 - f.y - zz) * 2) % 5) * 5;
-			f.y = zz - 2;
-		}
-	}
-
-	boolean FullField() {
-		int i;
-		for (i = 1; i <= WIDTH; i++) {
-			if (board.newField[i][3] > 0) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	void HideFigure(Figure f) {
-		DrawBox(f.x, f.y, 0);
-		DrawBox(f.x, f.y + 1, 0);
-		DrawBox(f.x, f.y + 2, 0);
+	void hideFigure(Figure f) {
+		drawBox(f.x, f.y, 0);
+		drawBox(f.x, f.y + 1, 0);
+		drawBox(f.x, f.y + 2, 0);
 	}
 
 	@Override
 	public void init() {
 		board = new Board();
-		board.newField = new int[WIDTH + 2][DEPTH + 2];
-		board.oldField = new int[WIDTH + 2][DEPTH + 2];
+		board.initFields(this);
 		graphics = getGraphics();
 		setFocusable(true);
 	}
@@ -140,40 +101,17 @@ public class Columns extends Applet implements Runnable {
 		return true;
 	}
 
-	void PackField() {
-		int i, j, n;
-		for (i = 1; i <= WIDTH; i++) {
-			n = DEPTH;
-			for (j = DEPTH; j > 0; j--) {
-				if (board.oldField[i][j] > 0) {
-					board.newField[i][n] = board.oldField[i][j];
-					n--;
-				}
-			}
-			;
-			for (j = n; j > 0; j--) {
-				board.newField[i][j] = 0;
-			}
-		}
-	}
-
 	@Override
 	public void paint(Graphics g) {
-		// ShowHelp(g);
+		showHelp(g);
 
 		g.setColor(Color.black);
 
-		ShowLevel(g);
-		ShowScore(g);
+		showLevel(g);
+		showScore(g);
 		drawField(g);
-		DrawFigure(figure);
+		drawFigure(board.figure);
 		requestFocus();
-	}
-
-	void PasteFigure(Figure f) {
-		board.newField[f.x][f.y] = f.c[1];
-		board.newField[f.x][f.y + 1] = f.c[2];
-		board.newField[f.x][f.y + 2] = f.c[3];
 	}
 
 	@Override
@@ -184,28 +122,32 @@ public class Columns extends Applet implements Runnable {
 
 		do {
 			tc = System.currentTimeMillis();
-			figure = Figure.initFigure();
-			DrawFigure(figure);
-			while ((figure.y < DEPTH - 2) && (board.newField[figure.x][figure.y + 3] == 0)) {
+			board.figure = new Figure();
+			drawFigure(board.figure);
+			while (board.figureMayMoveDown(this)) {
 				checkTimeAndMoveDownIfNeeded();
-				DScore = 0;
+				board.DScore = 0;
 				processUserEventsIfAny();
 			}
-			PasteFigure(figure);
+			board.pasteFigure(this, board.figure);
 			do {
-				noChanges = true;
-				findMatches();
-				if (!noChanges) {
-					Delay(500);
-					collapse();
+				board.noChanges = true;
+				board.findMatches(this);
+				if (foundMatches()) {
+					delay(500);
+					board.collapse(this);
 				}
-			} while (!noChanges);
-		} while (!FullField());
+			} while (foundMatches());
+		} while (!board.fullField(this));
+	}
+
+	private boolean foundMatches() {
+		return !board.noChanges;
 	}
 
 	private void processUserEventsIfAny() {
 		do {
-			Delay(50);
+			delay(50);
 			if (isKeyPressed) {
 				processEvent();
 			}
@@ -215,27 +157,9 @@ public class Columns extends Applet implements Runnable {
 	private void checkTimeAndMoveDownIfNeeded() {
 		if ((int) (System.currentTimeMillis() - tc) > (MAX_LEVEL - board.Level) * TIME_SHIFT + MIN_TIME_SHIFT) {
 			tc = System.currentTimeMillis();
-			HideFigure(figure);
-			figure.moveDown();
-			DrawFigure(figure);
-		}
-	}
-
-	private void collapse() {
-		PackField();
-		drawField(graphics);
-		Score += DScore;
-		ShowScore(graphics);
-		changeLevelIfNeeded();
-	}
-
-	private void changeLevelIfNeeded() {
-		if (figuresMatchedCounter >= NEXT_LEVEL_THRESHOLD) {
-			figuresMatchedCounter = 0;
-			if (board.Level < MAX_LEVEL) {
-				board.Level = board.Level + 1;
-			}
-			ShowLevel(graphics);
+			hideFigure(board.figure);
+			board.figure.moveDown();
+			drawFigure(board.figure);
 		}
 	}
 
@@ -243,40 +167,40 @@ public class Columns extends Applet implements Runnable {
 		isKeyPressed = false;
 		switch (keyPressed) {
 		case Event.LEFT:
-			if ((figure.x > 1) && (board.newField[figure.x - 1][figure.y + 2] == 0)) {
-				HideFigure(figure);
-				figure.moveLeft();
-				DrawFigure(figure);
+			if (board.canMoveLeft(this)) {
+				hideFigure(board.figure);
+				board.figure.moveLeft();
+				drawFigure(board.figure);
 			}
 			break;
 		case Event.RIGHT:
-			if ((figure.x < WIDTH) && (board.newField[figure.x + 1][figure.y + 2] == 0)) {
-				HideFigure(figure);
-				figure.moveRight();
-				DrawFigure(figure);
+			if (board.canMoveRight(this)) {
+				hideFigure(board.figure);
+				board.figure.moveRight();
+				drawFigure(board.figure);
 			}
 			break;
 		case Event.UP:
-			figure.rotateUp(this);
-			DrawFigure(figure);
+			board.figure.rotateUp();
+			drawFigure(board.figure);
 			break;
 		case Event.DOWN:
-			figure.rotateDown(this);
-			DrawFigure(figure);
+			board.figure.rotateDown();
+			drawFigure(board.figure);
 			break;
 		case ' ':
-			HideFigure(figure);
-			DropFigure(figure);
-			DrawFigure(figure);
+			hideFigure(board.figure);
+			board.dropFigure(this, board.figure);
+			drawFigure(board.figure);
 			tc = 0;
 			break;
 		case 'P':
 		case 'p':
 			while (!isKeyPressed) {
-				HideFigure(figure);
-				Delay(500);
-				DrawFigure(figure);
-				Delay(500);
+				hideFigure(board.figure);
+				delay(500);
+				drawFigure(board.figure);
+				delay(500);
 			}
 			tc = System.currentTimeMillis();
 			break;
@@ -284,20 +208,20 @@ public class Columns extends Applet implements Runnable {
 			if (board.Level > 0) {
 				board.Level = board.Level - 1;
 			}
-			figuresMatchedCounter = 0;
-			ShowLevel(graphics);
+			board.figuresMatchedCounter = 0;
+			showLevel(graphics);
 			break;
 		case '+':
 			if (board.Level < MAX_LEVEL) {
 				board.Level = board.Level + 1;
 			}
-			figuresMatchedCounter = 0;
-			ShowLevel(graphics);
+			board.figuresMatchedCounter = 0;
+			showLevel(graphics);
 			break;
 		}
 	}
 
-	void ShowHelp(Graphics g) {
+	void showHelp(Graphics g) {
 		g.setColor(Color.black);
 
 		g.drawString(" Keys available:", 200 - LEFT_BORDER, 102);
@@ -311,16 +235,16 @@ public class Columns extends Applet implements Runnable {
 		g.drawString("Quit:     Esc or Q", 200 - LEFT_BORDER, 190);
 	}
 
-	void ShowLevel(Graphics g) {
+	void showLevel(Graphics g) {
 		g.setColor(Color.black);
 		g.clearRect(LEFT_BORDER + 100, 390, 100, 20);
 		g.drawString("Level: " + board.Level, LEFT_BORDER + 100, 400);
 	}
 
-	void ShowScore(Graphics g) {
+	void showScore(Graphics g) {
 		g.setColor(Color.black);
 		g.clearRect(LEFT_BORDER, 390, 100, 20);
-		g.drawString("Score: " + Score, LEFT_BORDER, 400);
+		g.drawString("Score: " + board.Score, LEFT_BORDER, 400);
 	}
 
 	@Override
@@ -341,25 +265,6 @@ public class Columns extends Applet implements Runnable {
 		if (thr != null) {
 			thr.stop();
 			thr = null;
-		}
-	}
-
-	void findMatches() {
-		int i, j;
-		for (i = 1; i <= DEPTH; i++) {
-			for (j = 1; j <= WIDTH; j++) {
-				board.oldField[j][i] = board.newField[j][i];
-			}
-		}
-		for (i = 1; i <= DEPTH; i++) {
-			for (j = 1; j <= WIDTH; j++) {
-				if (board.newField[j][i] > 0) {
-					checkNeighbours(j, i - 1, j, i + 1, i, j);
-					checkNeighbours(j - 1, i, j + 1, i, i, j);
-					checkNeighbours(j - 1, i - 1, j + 1, i + 1, i, j);
-					checkNeighbours(j + 1, i - 1, j - 1, i + 1, i, j);
-				}
-			}
 		}
 	}
 }

@@ -5,8 +5,9 @@ import java.util.Random;
 
 class Figure {
 
-	static int x = Columns.WIDTH / 2 + 1, y = 1, c[] = new int[4];
 	static Random r = new Random();
+
+	int x = Columns.WIDTH / 2 + 1, y = 1, c[] = new int[4];
 
 	Figure()
 	{
@@ -26,25 +27,21 @@ class Figure {
 		x--;
 	}
 
-	void rotateUp(Columns columns) {
-		columns.col = c[1];
+	void rotateUp() {
+		int t = c[1];
 		c[1] = c[2];
 		c[2] = c[3];
-		c[3] = columns.col;
+		c[3] = t;
 	}
 
-	void rotateDown(Columns columns) {
-		columns.col = c[1];
+	void rotateDown() {
+		int t = c[1];
 		c[1] = c[3];
 		c[3] = c[2];
-		c[2] = columns.col;
+		c[2] = t;
 	}
 
 	void moveDown() {
 		y++;
-	}
-
-	static Figure initFigure() {
-		return new Figure();
 	}
 }
