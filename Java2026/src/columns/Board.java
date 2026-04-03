@@ -75,7 +75,7 @@ public class Board {
 			if (Level < Columns.MAX_LEVEL) {
 				Level = Level + 1;
 			}
-			columns.showLevel(columns.graphics);
+			columns.view.showLevel(columns, columns.graphics);
 		}
 	}
 
@@ -99,11 +99,11 @@ public class Board {
 	void checkNeighbours(Columns columns, int a, int b, int c, int d, int i, int j) {
 		if ((newField[j][i] == newField[a][b]) && (newField[j][i] == newField[c][d])) {
 			oldField[a][b] = 0;
-			columns.drawBox(a, b, 8);
+			columns.view.drawBox(a, b, 8);
 			oldField[j][i] = 0;
-			columns.drawBox(j, i, 8);
+			columns.view.drawBox(j, i, 8);
 			oldField[c][d] = 0;
-			columns.drawBox(c, d, 8);
+			columns.view.drawBox(c, d, 8);
 			noChanges = false;
 			Score = Score + (Level + 1) * 10;
 			figuresMatchedCounter = figuresMatchedCounter + 1;
@@ -113,9 +113,9 @@ public class Board {
 
 	void collapse(Columns columns) {
 		packField(columns);
-		columns.drawField(columns.graphics);
+		columns.view.drawField(newField, columns.graphics);
 		Score = Score + DScore;
-		columns.showScore(columns.graphics);
+		columns.view.showScore(columns, columns.graphics);
 		changeLevelIfNeeded(columns);
 	}
 
