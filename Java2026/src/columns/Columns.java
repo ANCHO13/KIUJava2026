@@ -7,17 +7,11 @@ import java.awt.Graphics;
 
 import columns.model.Board;
 import columns.model.Figure;
+import columns.model.GameConfig;
 import columns.model.ModelListener;
 import columns.model.View;
 
 public class Columns extends Applet implements Runnable, ModelListener {
-
-	public static final int BOX_SIZE = 25, DEPTH = 15, WIDTH = 7, MAX_LEVEL = 7, TIME_SHIFT = 250,
-			NEXT_LEVEL_THRESHOLD = 33,
-			MIN_TIME_SHIFT = 200, LEFT_BORDER = 2, TOP_BORDER = 2;
-
-	static final Color COLORS[] = { Color.black, Color.cyan, Color.blue, Color.red, Color.green, Color.yellow,
-			Color.pink, Color.magenta, Color.white };
 
 	int keyPressed;
 
@@ -114,11 +108,13 @@ public class Columns extends Applet implements Runnable, ModelListener {
 			if (isKeyPressed) {
 				processEvent();
 			}
-		} while ((int) (System.currentTimeMillis() - tc) <= (MAX_LEVEL - board.level) * TIME_SHIFT + MIN_TIME_SHIFT);
+		} while ((int) (System.currentTimeMillis() - tc) <= (GameConfig.MAX_LEVEL - board.level) * GameConfig.TIME_SHIFT
+				+ GameConfig.MIN_TIME_SHIFT);
 	}
 
 	private void checkTimeAndMoveDownIfNeeded() {
-		if ((int) (System.currentTimeMillis() - tc) > (MAX_LEVEL - board.level) * TIME_SHIFT + MIN_TIME_SHIFT) {
+		if ((int) (System.currentTimeMillis() - tc) > (GameConfig.MAX_LEVEL - board.level) * GameConfig.TIME_SHIFT
+				+ GameConfig.MIN_TIME_SHIFT) {
 			tc = System.currentTimeMillis();
 			view.hideFigure(board.figure);
 			board.figure.moveDown();
@@ -175,7 +171,7 @@ public class Columns extends Applet implements Runnable, ModelListener {
 			view.showLevel(board.level);
 			break;
 		case '+':
-			if (board.level < MAX_LEVEL) {
+			if (board.level < GameConfig.MAX_LEVEL) {
 				board.level = board.level + 1;
 			}
 			board.figuresMatchedCounter = 0;
@@ -207,7 +203,7 @@ public class Columns extends Applet implements Runnable, ModelListener {
 
 	public boolean fullField(Board board) {
 		int i;
-		for (i = 1; i <= Columns.WIDTH; i++) {
+		for (i = 1; i <= GameConfig.WIDTH; i++) {
 			if (board.newField[i][3] > 0) {
 				return true;
 			}

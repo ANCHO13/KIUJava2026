@@ -1,11 +1,15 @@
 package columns;
 
+import java.awt.Color;
 import java.awt.Graphics;
 
 import columns.model.Screen;
 
 
 public class AppletScreen implements Screen {
+
+	private static final Color[] COLORS = { Color.black, Color.cyan, Color.blue, Color.red, Color.green, Color.yellow,
+			Color.pink, Color.magenta, Color.white };
 
 	private Graphics g;
 
@@ -15,7 +19,7 @@ public class AppletScreen implements Screen {
 
 	@Override
 	public void setColor(int color) {
-		g.setColor(Columns.COLORS[color]);
+		g.setColor(COLORS[color]);
 	}
 
 	@Override
@@ -46,7 +50,7 @@ public class AppletScreen implements Screen {
 
 	@Override
 	public int White() {
-		return Columns.COLORS.length - 1;
+		return COLORS.length - 1;
 	}
 
 }

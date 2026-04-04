@@ -1,7 +1,5 @@
 package columns.model;
 
-import columns.Columns;
-
 public class Board {
 
 	public int newField[][];
@@ -20,8 +18,8 @@ public class Board {
 	}
 
 	public void initBoard() {
-		for (int c = 0; c < Columns.WIDTH + 1; c++) {
-			for (int r = 0; r < Columns.DEPTH + 1; r++) {
+		for (int c = 0; c < GameConfig.WIDTH + 1; c++) {
+			for (int r = 0; r < GameConfig.DEPTH + 1; r++) {
 				newField[c][r] = 0;
 				oldField[c][r] = 0;
 			}
@@ -34,8 +32,8 @@ public class Board {
 	void copyFieldsNew2Old() {
 		int i;
 		int j;
-		for (i = 1; i <= Columns.DEPTH; i++) {
-			for (j = 1; j <= Columns.WIDTH; j++) {
+		for (i = 1; i <= GameConfig.DEPTH; i++) {
+			for (j = 1; j <= GameConfig.WIDTH; j++) {
 				oldField[j][i] = newField[j][i];
 			}
 		}
@@ -43,19 +41,19 @@ public class Board {
 
 	public void dropFigure(Figure f) {
 		int zz;
-		if (f.y < Columns.DEPTH - 2) {
-			zz = Columns.DEPTH;
+		if (f.y < GameConfig.DEPTH - 2) {
+			zz = GameConfig.DEPTH;
 			while (newField[f.x][zz] > 0) {
 				zz--;
 			}
-			DScore = (((level + 1) * (Columns.DEPTH * 2 - f.y - zz) * 2) % 5) * 5;
+			DScore = (((level + 1) * (GameConfig.DEPTH * 2 - f.y - zz) * 2) % 5) * 5;
 			f.y = zz - 2;
 		}
 	}
 
 	public void initFields() {
-		newField = new int[Columns.WIDTH + 2][Columns.DEPTH + 2];
-		oldField = new int[Columns.WIDTH + 2][Columns.DEPTH + 2];
+		newField = new int[GameConfig.WIDTH + 2][GameConfig.DEPTH + 2];
+		oldField = new int[GameConfig.WIDTH + 2][GameConfig.DEPTH + 2];
 	}
 
 	public void pasteFigure(Figure f) {
@@ -65,9 +63,9 @@ public class Board {
 	}
 
 	void changeLevelIfNeeded() {
-		if (figuresMatchedCounter >= Columns.NEXT_LEVEL_THRESHOLD) {
+		if (figuresMatchedCounter >= GameConfig.NEXT_LEVEL_THRESHOLD) {
 			figuresMatchedCounter = 0;
-			if (level < Columns.MAX_LEVEL) {
+			if (level < GameConfig.MAX_LEVEL) {
 				level = level + 1;
 			}
 			listener.levelHasChanged(level);
@@ -76,15 +74,14 @@ public class Board {
 
 	void packField() {
 		int i, j, n;
-		for (i = 1; i <= Columns.WIDTH; i++) {
-			n = Columns.DEPTH;
-			for (j = Columns.DEPTH; j > 0; j--) {
+		for (i = 1; i <= GameConfig.WIDTH; i++) {
+			n = GameConfig.DEPTH;
+			for (j = GameConfig.DEPTH; j > 0; j--) {
 				if (oldField[i][j] > 0) {
 					newField[i][n] = oldField[i][j];
 					n--;
 				}
 			}
-			;
 			for (j = n; j > 0; j--) {
 				newField[i][j] = 0;
 			}
@@ -101,7 +98,6 @@ public class Board {
 			Score = Score + (level + 1) * 10;
 			figuresMatchedCounter = figuresMatchedCounter + 1;
 		}
-		;
 	}
 
 	public void collapse() {
@@ -115,8 +111,8 @@ public class Board {
 	public void findMatches() {
 		int i, j;
 		copyFieldsNew2Old();
-		for (i = 1; i <= Columns.DEPTH; i++) {
-			for (j = 1; j <= Columns.WIDTH; j++) {
+		for (i = 1; i <= GameConfig.DEPTH; i++) {
+			for (j = 1; j <= GameConfig.WIDTH; j++) {
 				if (newField[j][i] > 0) {
 					checkNeighbours(j, i - 1, j, i + 1, i, j);
 					checkNeighbours(j - 1, i, j + 1, i, i, j);
@@ -128,7 +124,7 @@ public class Board {
 	}
 
 	public boolean figureMayMoveDown() {
-		return (figure.y < Columns.DEPTH - 2) && (newField[figure.x][figure.y + 3] == 0);
+		return (figure.y < GameConfig.DEPTH - 2) && (newField[figure.x][figure.y + 3] == 0);
 	}
 
 	public boolean canMoveLeft() {
@@ -136,7 +132,7 @@ public class Board {
 	}
 
 	public boolean canMoveRight() {
-		return (figure.x < Columns.WIDTH) && (newField[figure.x + 1][figure.y + 2] == 0);
+		return (figure.x < GameConfig.WIDTH) && (newField[figure.x + 1][figure.y + 2] == 0);
 	}
 
 }

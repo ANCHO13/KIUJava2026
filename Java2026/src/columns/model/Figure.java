@@ -2,18 +2,15 @@ package columns.model;
 
 import java.util.Random;
 
-import columns.Columns;
-
-
 public class Figure {
 
 	static Random r = new Random();
 
-	public int x = Columns.WIDTH / 2 + 1, y = 1, c[] = new int[4];
+	public int x = GameConfig.WIDTH / 2 + 1, y = 1, c[] = new int[4];
 
 	public Figure()
 	{
-		x = Columns.WIDTH / 2 + 1;
+		x = GameConfig.WIDTH / 2 + 1;
 		y = 1;
 		c[0] = 0;
 		c[1] = Math.abs(r.nextInt())%7+1;
