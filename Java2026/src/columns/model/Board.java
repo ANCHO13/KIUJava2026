@@ -1,32 +1,37 @@
-package columns;
+package columns.model;
 
+import columns.Columns;
 
 public class Board {
 
-	int newField[][];
+	public int newField[][];
 	int oldField[][];
-	int Level;
-	long Score;
-	long DScore;
-	int figuresMatchedCounter;
-	boolean noChanges = true;
-	Columns columns;
-	Figure figure;
+	public int level;
+	public long Score;
+	public long DScore;
+	public int figuresMatchedCounter;
+	public boolean noChanges = true;
+	public Figure figure;
 
-	void initBoard(Columns columns) {
-		this.columns = columns;
+	private ModelListener listener;
+
+	public void setModelListener(ModelListener listener) {
+		this.listener = listener;
+	}
+
+	public void initBoard() {
 		for (int c = 0; c < Columns.WIDTH + 1; c++) {
 			for (int r = 0; r < Columns.DEPTH + 1; r++) {
 				newField[c][r] = 0;
 				oldField[c][r] = 0;
 			}
 		}
-		Level = 0;
+		level = 0;
 		Score = 0;
 		figuresMatchedCounter = 0;
 	}
 
-	void copyFieldsNew2Old(Columns columns) {
+	void copyFieldsNew2Old() {
 		int i;
 		int j;
 		for (i = 1; i <= Columns.DEPTH; i++) {
@@ -36,50 +41,40 @@ public class Board {
 		}
 	}
 
-	void dropFigure(Columns columns, Figure f) {
+	public void dropFigure(Figure f) {
 		int zz;
 		if (f.y < Columns.DEPTH - 2) {
 			zz = Columns.DEPTH;
 			while (newField[f.x][zz] > 0) {
 				zz--;
 			}
-			DScore = (((Level + 1) * (Columns.DEPTH * 2 - f.y - zz) * 2) % 5) * 5;
+			DScore = (((level + 1) * (Columns.DEPTH * 2 - f.y - zz) * 2) % 5) * 5;
 			f.y = zz - 2;
 		}
 	}
 
-	boolean fullField(Columns columns) {
-		int i;
-		for (i = 1; i <= Columns.WIDTH; i++) {
-			if (newField[i][3] > 0) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	void initFields(Columns columns) {
+	public void initFields() {
 		newField = new int[Columns.WIDTH + 2][Columns.DEPTH + 2];
 		oldField = new int[Columns.WIDTH + 2][Columns.DEPTH + 2];
 	}
 
-	void pasteFigure(Columns columns, Figure f) {
+	public void pasteFigure(Figure f) {
 		newField[f.x][f.y] = f.c[1];
 		newField[f.x][f.y + 1] = f.c[2];
 		newField[f.x][f.y + 2] = f.c[3];
 	}
 
-	void changeLevelIfNeeded(Columns columns) {
+	void changeLevelIfNeeded() {
 		if (figuresMatchedCounter >= Columns.NEXT_LEVEL_THRESHOLD) {
 			figuresMatchedCounter = 0;
-			if (Level < Columns.MAX_LEVEL) {
-				Level = Level + 1;
+			if (level < Columns.MAX_LEVEL) {
+				level = level + 1;
 			}
-			columns.view.showLevel(columns, columns.graphics);
+			listener.levelHasChanged(level);
 		}
 	}
 
-	void packField(Columns columns) {
+	void packField() {
 		int i, j, n;
 		for (i = 1; i <= Columns.WIDTH; i++) {
 			n = Columns.DEPTH;
@@ -96,53 +91,51 @@ public class Board {
 		}
 	}
 
-	void checkNeighbours(Columns columns, int a, int b, int c, int d, int i, int j) {
+	void checkNeighbours(int a, int b, int c, int d, int i, int j) {
 		if ((newField[j][i] == newField[a][b]) && (newField[j][i] == newField[c][d])) {
 			oldField[a][b] = 0;
-			columns.view.drawBox(a, b, 8);
 			oldField[j][i] = 0;
-			columns.view.drawBox(j, i, 8);
 			oldField[c][d] = 0;
-			columns.view.drawBox(c, d, 8);
+			listener.hightlightTriplet(a, b, c, d, i, j);
 			noChanges = false;
-			Score = Score + (Level + 1) * 10;
+			Score = Score + (level + 1) * 10;
 			figuresMatchedCounter = figuresMatchedCounter + 1;
 		}
 		;
 	}
 
-	void collapse(Columns columns) {
-		packField(columns);
-		columns.view.drawField(newField, columns.graphics);
+	public void collapse() {
+		packField();
+		listener.fieldWasUpdated(newField);
 		Score = Score + DScore;
-		columns.view.showScore(columns, columns.graphics);
-		changeLevelIfNeeded(columns);
+		listener.scoreUpdated(Score);
+		changeLevelIfNeeded();
 	}
 
-	void findMatches(Columns columns) {
+	public void findMatches() {
 		int i, j;
-		copyFieldsNew2Old(columns);
+		copyFieldsNew2Old();
 		for (i = 1; i <= Columns.DEPTH; i++) {
 			for (j = 1; j <= Columns.WIDTH; j++) {
 				if (newField[j][i] > 0) {
-					checkNeighbours(columns, j, i - 1, j, i + 1, i, j);
-					checkNeighbours(columns, j - 1, i, j + 1, i, i, j);
-					checkNeighbours(columns, j - 1, i - 1, j + 1, i + 1, i, j);
-					checkNeighbours(columns, j + 1, i - 1, j - 1, i + 1, i, j);
+					checkNeighbours(j, i - 1, j, i + 1, i, j);
+					checkNeighbours(j - 1, i, j + 1, i, i, j);
+					checkNeighbours(j - 1, i - 1, j + 1, i + 1, i, j);
+					checkNeighbours(j + 1, i - 1, j - 1, i + 1, i, j);
 				}
 			}
 		}
 	}
 
-	boolean figureMayMoveDown(Columns columns) {
+	public boolean figureMayMoveDown() {
 		return (figure.y < Columns.DEPTH - 2) && (newField[figure.x][figure.y + 3] == 0);
 	}
 
-	boolean canMoveLeft(Columns columns) {
+	public boolean canMoveLeft() {
 		return (figure.x > 1) && (newField[figure.x - 1][figure.y + 2] == 0);
 	}
 
-	boolean canMoveRight(Columns columns) {
+	public boolean canMoveRight() {
 		return (figure.x < Columns.WIDTH) && (newField[figure.x + 1][figure.y + 2] == 0);
 	}
 

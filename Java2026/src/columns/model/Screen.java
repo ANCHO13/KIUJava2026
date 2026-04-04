@@ -1,10 +1,8 @@
-package columns;
-
-import java.awt.Color;
+package columns.model;
 
 public interface Screen {
 
-	void setColor(Color color);
+	void setColor(int color);
 
 	void fillRect(int x, int y, int width, int height);
 
@@ -13,5 +11,9 @@ public interface Screen {
 	void drawString(String string, int x, int y);
 
 	void clearRect(int x, int y, int width, int height);
+
+	int Black();
+
+	int White();
 
 }

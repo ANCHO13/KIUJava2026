@@ -1,7 +1,8 @@
 package columns;
 
-import java.awt.Color;
 import java.awt.Graphics;
+
+import columns.model.Screen;
 
 
 public class AppletScreen implements Screen {
@@ -13,8 +14,8 @@ public class AppletScreen implements Screen {
 	}
 
 	@Override
-	public void setColor(Color color) {
-		g.setColor(color);
+	public void setColor(int color) {
+		g.setColor(Columns.COLORS[color]);
 	}
 
 	@Override
@@ -36,6 +37,16 @@ public class AppletScreen implements Screen {
 	@Override
 	public void clearRect(int x, int y, int width, int height) {
 		g.clearRect(x, y, width, height);
+	}
+
+	@Override
+	public int Black() {
+		return 0;
+	}
+
+	@Override
+	public int White() {
+		return Columns.COLORS.length - 1;
 	}
 
 }

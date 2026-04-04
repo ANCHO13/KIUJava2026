@@ -1,15 +1,17 @@
-package columns;
+package columns.model;
 
 import java.util.Random;
 
+import columns.Columns;
 
-class Figure {
+
+public class Figure {
 
 	static Random r = new Random();
 
-	int x = Columns.WIDTH / 2 + 1, y = 1, c[] = new int[4];
+	public int x = Columns.WIDTH / 2 + 1, y = 1, c[] = new int[4];
 
-	Figure()
+	public Figure()
 	{
 		x = Columns.WIDTH / 2 + 1;
 		y = 1;
@@ -19,29 +21,29 @@ class Figure {
 		c[3] = Math.abs(r.nextInt())%7+1;
 	}
 
-	void moveRight() {
+	public void moveRight() {
 		x++;
 	}
 
-	void moveLeft() {
+	public void moveLeft() {
 		x--;
 	}
 
-	void rotateUp() {
+	public void rotateUp() {
 		int t = c[1];
 		c[1] = c[2];
 		c[2] = c[3];
 		c[3] = t;
 	}
 
-	void rotateDown() {
+	public void rotateDown() {
 		int t = c[1];
 		c[1] = c[3];
 		c[3] = c[2];
 		c[2] = t;
 	}
 
-	void moveDown() {
+	public void moveDown() {
 		y++;
 	}
 }

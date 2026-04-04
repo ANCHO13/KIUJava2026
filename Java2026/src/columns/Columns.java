@@ -5,13 +5,19 @@ import java.awt.Color;
 import java.awt.Event;
 import java.awt.Graphics;
 
-public class Columns extends Applet implements Runnable {
+import columns.model.Board;
+import columns.model.Figure;
+import columns.model.ModelListener;
+import columns.model.View;
 
-	static final int BOX_SIZE = 25, DEPTH = 15, WIDTH = 7, MAX_LEVEL = 7, TIME_SHIFT = 250, NEXT_LEVEL_THRESHOLD = 33,
+public class Columns extends Applet implements Runnable, ModelListener {
+
+	public static final int BOX_SIZE = 25, DEPTH = 15, WIDTH = 7, MAX_LEVEL = 7, TIME_SHIFT = 250,
+			NEXT_LEVEL_THRESHOLD = 33,
 			MIN_TIME_SHIFT = 200, LEFT_BORDER = 2, TOP_BORDER = 2;
 
 	static final Color COLORS[] = { Color.black, Color.cyan, Color.blue, Color.red, Color.green, Color.yellow,
-			Color.pink, Color.magenta, Color.black };
+			Color.pink, Color.magenta, Color.white };
 
 	int keyPressed;
 
@@ -25,7 +31,7 @@ public class Columns extends Applet implements Runnable {
 
 	Board board;
 
-	View view = new View();
+	public View view = new View();
 
 	void delay(long t) {
 		try {
@@ -37,7 +43,8 @@ public class Columns extends Applet implements Runnable {
 	@Override
 	public void init() {
 		board = new Board();
-		board.initFields(this);
+		board.setModelListener(this);
+		board.initFields();
 		graphics = getGraphics();
 		view.setScreen(new AppletScreen(graphics));
 		setFocusable(true);
@@ -59,20 +66,20 @@ public class Columns extends Applet implements Runnable {
 
 	@Override
 	public void paint(Graphics g) {
-		view.showHelp(g);
+		view.showHelp();
 
 		g.setColor(Color.black);
 
-		view.showLevel(this, g);
-		view.showScore(this, g);
-		view.drawField(board.newField, g);
+		view.showLevel(board.level);
+		view.showScore(board.Score);
+		view.drawField(board.newField);
 		view.drawFigure(board.figure);
 		requestFocus();
 	}
 
 	@Override
 	public void run() {
-		board.initBoard(this);
+		board.initBoard();
 		graphics.setColor(Color.black);
 		requestFocus();
 
@@ -80,21 +87,21 @@ public class Columns extends Applet implements Runnable {
 			tc = System.currentTimeMillis();
 			board.figure = new Figure();
 			view.drawFigure(board.figure);
-			while (board.figureMayMoveDown(this)) {
+			while (board.figureMayMoveDown()) {
 				checkTimeAndMoveDownIfNeeded();
 				board.DScore = 0;
 				processUserEventsIfAny();
 			}
-			board.pasteFigure(this, board.figure);
+			board.pasteFigure(board.figure);
 			do {
 				board.noChanges = true;
-				board.findMatches(this);
+				board.findMatches();
 				if (foundMatches()) {
 					delay(500);
-					board.collapse(this);
+					board.collapse();
 				}
 			} while (foundMatches());
-		} while (!board.fullField(this));
+		} while (!fullField(board));
 	}
 
 	private boolean foundMatches() {
@@ -107,13 +114,13 @@ public class Columns extends Applet implements Runnable {
 			if (isKeyPressed) {
 				processEvent();
 			}
-		} while ((int) (System.currentTimeMillis() - tc) <= (MAX_LEVEL - board.Level) * TIME_SHIFT + MIN_TIME_SHIFT);
+		} while ((int) (System.currentTimeMillis() - tc) <= (MAX_LEVEL - board.level) * TIME_SHIFT + MIN_TIME_SHIFT);
 	}
 
 	private void checkTimeAndMoveDownIfNeeded() {
-		if ((int) (System.currentTimeMillis() - tc) > (MAX_LEVEL - board.Level) * TIME_SHIFT + MIN_TIME_SHIFT) {
+		if ((int) (System.currentTimeMillis() - tc) > (MAX_LEVEL - board.level) * TIME_SHIFT + MIN_TIME_SHIFT) {
 			tc = System.currentTimeMillis();
-			view.hideFigure(this, board.figure);
+			view.hideFigure(board.figure);
 			board.figure.moveDown();
 			view.drawFigure(board.figure);
 		}
@@ -123,15 +130,15 @@ public class Columns extends Applet implements Runnable {
 		isKeyPressed = false;
 		switch (keyPressed) {
 		case Event.LEFT:
-			if (board.canMoveLeft(this)) {
-				view.hideFigure(this, board.figure);
+			if (board.canMoveLeft()) {
+				view.hideFigure(board.figure);
 				board.figure.moveLeft();
 				view.drawFigure(board.figure);
 			}
 			break;
 		case Event.RIGHT:
-			if (board.canMoveRight(this)) {
-				view.hideFigure(this, board.figure);
+			if (board.canMoveRight()) {
+				view.hideFigure(board.figure);
 				board.figure.moveRight();
 				view.drawFigure(board.figure);
 			}
@@ -145,15 +152,15 @@ public class Columns extends Applet implements Runnable {
 			view.drawFigure(board.figure);
 			break;
 		case ' ':
-			view.hideFigure(this, board.figure);
-			board.dropFigure(this, board.figure);
+			view.hideFigure(board.figure);
+			board.dropFigure(board.figure);
 			view.drawFigure(board.figure);
 			tc = 0;
 			break;
 		case 'P':
 		case 'p':
 			while (!isKeyPressed) {
-				view.hideFigure(this, board.figure);
+				view.hideFigure(board.figure);
 				delay(500);
 				view.drawFigure(board.figure);
 				delay(500);
@@ -161,18 +168,18 @@ public class Columns extends Applet implements Runnable {
 			tc = System.currentTimeMillis();
 			break;
 		case '-':
-			if (board.Level > 0) {
-				board.Level = board.Level - 1;
+			if (board.level > 0) {
+				board.level = board.level - 1;
 			}
 			board.figuresMatchedCounter = 0;
-			view.showLevel(this, graphics);
+			view.showLevel(board.level);
 			break;
 		case '+':
-			if (board.Level < MAX_LEVEL) {
-				board.Level = board.Level + 1;
+			if (board.level < MAX_LEVEL) {
+				board.level = board.level + 1;
 			}
 			board.figuresMatchedCounter = 0;
-			view.showLevel(this, graphics);
+			view.showLevel(board.level);
 			break;
 		}
 	}
@@ -196,5 +203,37 @@ public class Columns extends Applet implements Runnable {
 			thr.stop();
 			thr = null;
 		}
+	}
+
+	public boolean fullField(Board board) {
+		int i;
+		for (i = 1; i <= Columns.WIDTH; i++) {
+			if (board.newField[i][3] > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public void levelHasChanged(int level) {
+		view.showLevel(level);
+	}
+
+	@Override
+	public void hightlightTriplet(int a, int b, int c, int d, int i, int j) {
+		view.drawBox(a, b, 8);
+		view.drawBox(j, i, 8);
+		view.drawBox(c, d, 8);
+	}
+
+	@Override
+	public void fieldWasUpdated(int[][] field) {
+		view.drawField(field);
+	}
+
+	@Override
+	public void scoreUpdated(long score) {
+		view.showScore(score);
 	}
 }
