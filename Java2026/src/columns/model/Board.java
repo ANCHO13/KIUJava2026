@@ -93,7 +93,7 @@ public class Board {
 			oldField[a][b] = 0;
 			oldField[j][i] = 0;
 			oldField[c][d] = 0;
-			listener.hightlightTriplet(a, b, c, d, i, j);
+			listener.tripletDetected(a, b, c, d, i, j);
 			noChanges = false;
 			Score = Score + (level + 1) * 10;
 			figuresMatchedCounter = figuresMatchedCounter + 1;
@@ -133,6 +133,15 @@ public class Board {
 
 	public boolean canMoveRight() {
 		return (figure.x < GameConfig.WIDTH) && (newField[figure.x + 1][figure.y + 2] == 0);
+	}
+
+	public boolean isFieldFull() {
+		for (int i = 1; i <= GameConfig.WIDTH; i++) {
+			if (newField[i][3] > 0) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

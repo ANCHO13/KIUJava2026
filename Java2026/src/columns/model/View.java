@@ -42,10 +42,18 @@ public class View {
 		return screen.Black();
 	}
 
+	public void drawVerticalTripletAt(int x, int y, int color1, int color2, int color3) {
+		drawBox(x, y, color1);
+		drawBox(x, y + 1, color2);
+		drawBox(x, y + 2, color3);
+	}
+
 	public void drawFigure(Figure f) {
-		drawBox(f.x, f.y, f.c[1]);
-		drawBox(f.x, f.y + 1, f.c[2]);
-		drawBox(f.x, f.y + 2, f.c[3]);
+		drawVerticalTripletAt(f.x, f.y, f.c[1], f.c[2], f.c[3]);
+	}
+
+	public void hideFigure(Figure f) {
+		drawVerticalTripletAt(f.x, f.y, 0, 0, 0);
 	}
 
 	public void drawField(int[][] field) {
@@ -56,11 +64,6 @@ public class View {
 		}
 	}
 
-	public void hideFigure(Figure f) {
-		drawBox(f.x, f.y, 0);
-		drawBox(f.x, f.y + 1, 0);
-		drawBox(f.x, f.y + 2, 0);
-	}
 
 	public void showHelp() {
 		screen.setColor(Black());

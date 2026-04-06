@@ -5,7 +5,7 @@ public interface ModelListener {
 
 	void levelHasChanged(int level);
 
-	void hightlightTriplet(int a, int b, int c, int d, int i, int j);
+	void tripletDetected(int a, int b, int c, int d, int i, int j);
 
 	void fieldWasUpdated(int[][] newField);
 

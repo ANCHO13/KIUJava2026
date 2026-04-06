@@ -2,6 +2,7 @@ package columns;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.Arrays;
 
 import columns.model.Screen;
 
@@ -45,12 +46,12 @@ public class AppletScreen implements Screen {
 
 	@Override
 	public int Black() {
-		return 0;
+		return Arrays.asList(COLORS).indexOf(Color.black);
 	}
 
 	@Override
 	public int White() {
-		return COLORS.length - 1;
+		return Arrays.asList(COLORS).indexOf(Color.white);
 	}
 
 }

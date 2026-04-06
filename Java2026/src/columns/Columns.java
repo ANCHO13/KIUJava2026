@@ -95,7 +95,7 @@ public class Columns extends Applet implements Runnable, ModelListener {
 					board.collapse();
 				}
 			} while (foundMatches());
-		} while (!fullField(board));
+		} while (!board.isFieldFull());
 	}
 
 	private boolean foundMatches() {
@@ -201,23 +201,13 @@ public class Columns extends Applet implements Runnable, ModelListener {
 		}
 	}
 
-	public boolean fullField(Board board) {
-		int i;
-		for (i = 1; i <= GameConfig.WIDTH; i++) {
-			if (board.newField[i][3] > 0) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	@Override
 	public void levelHasChanged(int level) {
 		view.showLevel(level);
 	}
 
 	@Override
-	public void hightlightTriplet(int a, int b, int c, int d, int i, int j) {
+	public void tripletDetected(int a, int b, int c, int d, int i, int j) {
 		view.drawBox(a, b, 8);
 		view.drawBox(j, i, 8);
 		view.drawBox(c, d, 8);
