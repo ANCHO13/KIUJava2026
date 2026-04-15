@@ -1,76 +1,86 @@
 package badsmells;
 
 /*
- * Smell: Data Clumps
+ * Smell:
+ * The same related group of values (name, email, and phone) appears together
+ * repeatedly across multiple methods and callers. This indicates a missing
+ * concept in the design.
  *
- * The same related data appears in repeated groups. The problem is not just one
- * long parameter list; it is that the code keeps carrying the same cluster of
- * values around as separate variables instead of modeling them as one concept.
+ * Refactorings:
+ * - Introduced a ContactInfo class for name, email, and phone
+ * - Moved related behavior onto the ContactInfo object
  *
- * Proposed Refactorings:
- * - Introduce a ContactInfo class for name, email, and phone.
- * - Move related behavior onto that new object.
+ * Why better:
+ * The repeated data clump is now modeled as one coherent object. This improves
+ * readability, reduces duplication, and keeps related data and behavior together.
+ *
+ * Behavior:
+ * The observable behavior remains unchanged.
  */
 public class DataClumpsExample {
 
-	public String buildLabel(String name, String email, String phone) {
-		return name + " <" + email + ">, phone: " + phone;
-	}
+    static class ContactInfo {
+        private final String name;
+        private final String email;
+        private final String phone;
 
-	public String buildEmailGreeting(String name, String email, String phone) {
-		return "To: " + email + ", hello " + name;
-	}
+        ContactInfo(String name, String email, String phone) {
+            this.name = name;
+            this.email = email;
+            this.phone = phone;
+        }
 
-	public String buildSmsMessage(String name, String email, String phone) {
-		return "SMS to " + phone + ": Hi " + name;
-	}
+        public String buildLabel() {
+            return name + " <" + email + ">, phone: " + phone;
+        }
 
-	public boolean isReachable(String name, String email, String phone) {
-		return email != null && !email.trim().isEmpty() && phone != null && !phone.trim().isEmpty();
-	}
+        public String buildEmailGreeting() {
+            return "To: " + email + ", hello " + name;
+        }
 
-	public void clientCode() {
-		String studentName = "Nino";
-		String studentEmail = "nino@example.com";
-		String studentPhone = "+995-555-000-001";
+        public String buildSmsMessage() {
+            return "SMS to " + phone + ": Hi " + name;
+        }
 
-		String advisorName = "Giorgi";
-		String advisorEmail = "giorgi@example.com";
-		String advisorPhone = "+995-555-000-002";
+        public boolean isReachable() {
+            return email != null && !email.trim().isEmpty()
+                    && phone != null && !phone.trim().isEmpty();
+        }
+    }
 
-		String accountantName = "Maka";
-		String accountantEmail = "maka@example.com";
-		String accountantPhone = "+995-555-000-003";
+    public void clientCode() {
+        ContactInfo student = new ContactInfo("Nino", "nino@example.com", "+995-555-000-001");
+        ContactInfo advisor = new ContactInfo("Giorgi", "giorgi@example.com", "+995-555-000-002");
+        ContactInfo accountant = new ContactInfo("Maka", "maka@example.com", "+995-555-000-003");
 
-		// The same clump is reused across different operations for each peer.
-		String studentLabel = buildLabel(studentName, studentEmail, studentPhone);
-		String studentGreeting = buildEmailGreeting(studentName, studentEmail, studentPhone);
-		String studentSms = buildSmsMessage(studentName, studentEmail, studentPhone);
-		boolean studentReachable = isReachable(studentName, studentEmail, studentPhone);
+        String studentLabel = student.buildLabel();
+        String studentGreeting = student.buildEmailGreeting();
+        String studentSms = student.buildSmsMessage();
+        boolean studentReachable = student.isReachable();
 
-		String advisorLabel = buildLabel(advisorName, advisorEmail, advisorPhone);
-		String advisorGreeting = buildEmailGreeting(advisorName, advisorEmail, advisorPhone);
-		String advisorSms = buildSmsMessage(advisorName, advisorEmail, advisorPhone);
-		boolean advisorReachable = isReachable(advisorName, advisorEmail, advisorPhone);
+        String advisorLabel = advisor.buildLabel();
+        String advisorGreeting = advisor.buildEmailGreeting();
+        String advisorSms = advisor.buildSmsMessage();
+        boolean advisorReachable = advisor.isReachable();
 
-		String accountantLabel = buildLabel(accountantName, accountantEmail, accountantPhone);
-		String accountantGreeting = buildEmailGreeting(accountantName, accountantEmail, accountantPhone);
-		String accountantSms = buildSmsMessage(accountantName, accountantEmail, accountantPhone);
-		boolean accountantReachable = isReachable(accountantName, accountantEmail, accountantPhone);
+        String accountantLabel = accountant.buildLabel();
+        String accountantGreeting = accountant.buildEmailGreeting();
+        String accountantSms = accountant.buildSmsMessage();
+        boolean accountantReachable = accountant.isReachable();
 
-		System.out.println(studentLabel);
-		System.out.println(studentGreeting);
-		System.out.println(studentSms);
-		System.out.println(studentReachable);
+        System.out.println(studentLabel);
+        System.out.println(studentGreeting);
+        System.out.println(studentSms);
+        System.out.println(studentReachable);
 
-		System.out.println(advisorLabel);
-		System.out.println(advisorGreeting);
-		System.out.println(advisorSms);
-		System.out.println(advisorReachable);
+        System.out.println(advisorLabel);
+        System.out.println(advisorGreeting);
+        System.out.println(advisorSms);
+        System.out.println(advisorReachable);
 
-		System.out.println(accountantLabel);
-		System.out.println(accountantGreeting);
-		System.out.println(accountantSms);
-		System.out.println(accountantReachable);
-	}
+        System.out.println(accountantLabel);
+        System.out.println(accountantGreeting);
+        System.out.println(accountantSms);
+        System.out.println(accountantReachable);
+    }
 }
