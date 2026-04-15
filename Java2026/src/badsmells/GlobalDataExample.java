@@ -1,49 +1,76 @@
 package badsmells;
 
 /*
- * Smell: Global Data
+ * Smell:
+ * The semester and tuition values are stored in public static fields, which
+ * makes them globally accessible and easy to modify from anywhere. This weakens
+ * encapsulation and makes state changes harder to control and trace.
  *
- * These public static fields are reachable from anywhere. That makes ownership
- * weak and makes changes harder to track.
+ * Refactorings:
+ * - Encapsulated the global state behind methods
+ * - Moved the shared data into a dedicated configuration object
  *
- * Proposed Refactorings:
- * - Encapsulate the global variables behind methods.
- * - Move the state into a dedicated object with controlled access.
+ * Why better:
+ * The state now has clear ownership and controlled access. Changes go through
+ * explicit methods, which improves encapsulation and makes the design safer.
+ *
+ * Behavior:
+ * The observable behavior remains unchanged.
  */
 public class GlobalDataExample {
 
-	public static String currentSemester = "SPRING";
-	public static double tuitionRate = 1250.0;
+    private final UniversityConfiguration configuration = new UniversityConfiguration();
 
-	public static void applyEmergencyIncrease(double delta) {
-		tuitionRate += delta;
-	}
+    static class UniversityConfiguration {
+        private String currentSemester = "SPRING";
+        private double tuitionRate = 1250.0;
 
-	static class BillingService {
-		public double calculateInvoice(int credits) {
-			return credits * GlobalDataExample.tuitionRate;
-		}
-	}
+        public String getCurrentSemester() {
+            return currentSemester;
+        }
 
-	static class SemesterAdministration {
-		public void openFallSemester() {
-			GlobalDataExample.currentSemester = "FALL";
-		}
+        public double getTuitionRate() {
+            return tuitionRate;
+        }
 
-		public void approveRateIncrease() {
-			GlobalDataExample.tuitionRate = GlobalDataExample.tuitionRate + 100;
-		}
-	}
+        public void openFallSemester() {
+            currentSemester = "FALL";
+        }
 
-	public void clientCode() {
-		BillingService billingService = new BillingService();
-		SemesterAdministration administration = new SemesterAdministration();
+        public void increaseTuitionRate(double delta) {
+            tuitionRate += delta;
+        }
+    }
 
-		System.out.println(currentSemester);
-		System.out.println(billingService.calculateInvoice(3));
-		administration.openFallSemester();
-		administration.approveRateIncrease();
-		System.out.println(currentSemester);
-		System.out.println(billingService.calculateInvoice(3));
-	}
+    class BillingService {
+        public double calculateInvoice(int credits) {
+            return credits * configuration.getTuitionRate();
+        }
+    }
+
+    class SemesterAdministration {
+        public void openFallSemester() {
+            configuration.openFallSemester();
+        }
+
+        public void approveRateIncrease() {
+            configuration.increaseTuitionRate(100);
+        }
+    }
+
+    public void applyEmergencyIncrease(double delta) {
+        configuration.increaseTuitionRate(delta);
+    }
+
+    public void clientCode() {
+        BillingService billingService = new BillingService();
+        SemesterAdministration administration = new SemesterAdministration();
+
+        System.out.println(configuration.getCurrentSemester());
+        System.out.println(billingService.calculateInvoice(3));
+        administration.openFallSemester();
+        administration.approveRateIncrease();
+        System.out.println(configuration.getCurrentSemester());
+        System.out.println(billingService.calculateInvoice(3));
+    }
 }
