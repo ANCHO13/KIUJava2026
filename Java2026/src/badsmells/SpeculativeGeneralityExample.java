@@ -1,33 +1,37 @@
 package badsmells;
 
 /*
- * Smell: Speculative Generality
+ * Smell:
+ * The interface includes parameters for future use that are not currently used.
+ * This adds unnecessary complexity and makes the design harder to understand.
  *
- * The interface carries extra options for future scenarios, but the
- * implementation ignores them. The abstraction is prepared for variation that
- * does not currently exist.
+ * Refactorings:
+ * - Removed unused parameters
+ * - Simplified the interface to match actual requirements
  *
- * Proposed Refactorings:
- * - Remove unused parameters and options.
- * - Inline or simplify abstractions that only support imaginary requirements.
+ * Why better:
+ * The code now reflects real usage instead of hypothetical scenarios, making it
+ * simpler and easier to maintain.
+ *
+ * Behavior:
+ * The observable behavior remains unchanged.
  */
 public class SpeculativeGeneralityExample {
 
-	interface NotificationChannel {
+    interface NotificationChannel {
+        void send(String message);
+    }
 
-		void send(String message, String futureTemplate, boolean encrypted, boolean urgent);
-	}
+    static class EmailChannel implements NotificationChannel {
 
-	static class EmailChannel implements NotificationChannel {
+        @Override
+        public void send(String message) {
+            System.out.println(message);
+        }
+    }
 
-		@Override
-		public void send(String message, String futureTemplate, boolean encrypted, boolean urgent) {
-			System.out.println(message);
-		}
-	}
-
-	public void clientCode() {
-		NotificationChannel channel = new EmailChannel();
-		channel.send("Exam starts at 10:00", "future-template", true, true);
-	}
+    public void clientCode() {
+        NotificationChannel channel = new EmailChannel();
+        channel.send("Exam starts at 10:00");
+    }
 }
