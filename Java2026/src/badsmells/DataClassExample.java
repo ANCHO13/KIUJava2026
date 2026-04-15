@@ -1,66 +1,65 @@
 package badsmells;
 
 /*
- * Smell: Data Class
+ * Smell:
+ * StudentRecord only stores data while behavior that depends on it is located
+ * in separate classes. This creates a weak and passive data structure.
  *
- * StudentRecord is only a bag of fields. When behavior is kept elsewhere and a
- * class mostly exposes raw data, the model stays weak and passive.
+ * Refactorings:
+ * - Moved behavior into StudentRecord
+ * - Encapsulated fields by making them private
  *
- * Proposed Refactorings:
- * - Move behavior that uses the data into StudentRecord.
- * - Encapsulate fields and remove pointless setters where possible.
+ * Why better:
+ * Data and related behavior are now together, improving cohesion and making
+ * the design more object-oriented and easier to maintain.
+ *
+ * Behavior:
+ * The observable behavior remains unchanged.
  */
 public class DataClassExample {
 
-	public static class StudentRecord {
+    public static class StudentRecord {
 
-		public String name;
-		public int credits;
-		public double gpa;
-	}
+        private final String name;
+        private final int credits;
+        private final double gpa;
 
-	public static class HonorsEvaluator {
-		public boolean isEligible(StudentRecord student) {
-			return student.credits >= 30 && student.gpa >= 3.7;
-		}
-	}
+        public StudentRecord(String name, int credits, double gpa) {
+            this.name = name;
+            this.credits = credits;
+            this.gpa = gpa;
+        }
 
-	public static class TuitionDiscountCalculator {
-		public double discountPercent(StudentRecord student) {
-			if (student.gpa >= 3.8) {
-				return 0.15;
-			}
-			if (student.gpa >= 3.5) {
-				return 0.10;
-			}
-			return 0.0;
-		}
-	}
+        public boolean isEligibleForHonors() {
+            return credits >= 30 && gpa >= 3.7;
+        }
 
-	public static class AcademicStandingReporter {
-		public String describe(StudentRecord student) {
-			if (student.gpa < 2.0) {
-				return student.name + " is on academic probation";
-			}
-			if (student.credits < 15) {
-				return student.name + " is a new student";
-			}
-			return student.name + " is in good standing";
-		}
-	}
+        public double discountPercent() {
+            if (gpa >= 3.8) {
+                return 0.15;
+            }
+            if (gpa >= 3.5) {
+                return 0.10;
+            }
+            return 0.0;
+        }
 
-	public void clientCode() {
-		StudentRecord student = new StudentRecord();
-		student.name = "Nino";
-		student.credits = 32;
-		student.gpa = 3.8;
+        public String describeStanding() {
+            if (gpa < 2.0) {
+                return name + " is on academic probation";
+            }
+            if (credits < 15) {
+                return name + " is a new student";
+            }
+            return name + " is in good standing";
+        }
+    }
 
-		HonorsEvaluator honorsEvaluator = new HonorsEvaluator();
-		TuitionDiscountCalculator discountCalculator = new TuitionDiscountCalculator();
-		AcademicStandingReporter standingReporter = new AcademicStandingReporter();
+    public void clientCode() {
+        StudentRecord student = new StudentRecord("Nino", 32, 3.8);
 
-		System.out.println(honorsEvaluator.isEligible(student));
-		System.out.println(discountCalculator.discountPercent(student));
-		System.out.println(standingReporter.describe(student));
-	}
+        System.out.println(student.isEligibleForHonors());
+        System.out.println(student.discountPercent());
+        System.out.println(student.describeStanding());
+    }
 }
