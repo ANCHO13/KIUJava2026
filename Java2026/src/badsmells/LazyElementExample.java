@@ -1,26 +1,23 @@
 package badsmells;
 
 /*
- * Smell: Lazy Element
+ * Smell:
+ * The StudentNameFormatter class adds no meaningful abstraction and only wraps
+ * a simple trim operation. This makes the design unnecessarily complex.
  *
- * This helper class exists only to trim a string. The extra structure buys very
- * little value and is probably not worth keeping.
+ * Refactorings:
+ * - Inlined the formatter logic into the client
+ * - Removed the unnecessary class
  *
- * Proposed Refactorings:
- * - Inline the class into its caller.
- * - Remove the abstraction unless it has real variation or behavior to hold.
+ * Why better:
+ * The code is now simpler and avoids an unnecessary layer of abstraction.
+ *
+ * Behavior:
+ * The observable behavior remains unchanged.
  */
 public class LazyElementExample {
 
-	static class StudentNameFormatter {
-
-		public String format(String name) {
-			return name.trim();
-		}
-	}
-
-	public void clientCode() {
-		StudentNameFormatter formatter = new StudentNameFormatter();
-		System.out.println(formatter.format("  Nino  "));
-	}
+    public void clientCode() {
+        System.out.println("  Nino  ".trim());
+    }
 }
